@@ -25,113 +25,138 @@ import org.apache.shiro.authc.UnknownAccountException;
 import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.config.IniSecurityManagerFactory;
 import org.apache.shiro.mgt.SecurityManager;
-import org.apache.shiro.session.Session;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.Factory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Simple Quickstart application showing how to use Shiro's API.
- * 
- * @since 0.9 RC2
- */
 public class Quickstart {
 
 	private static final transient Logger log = LoggerFactory
 			.getLogger(Quickstart.class);
 
+	public static void doLogin(Subject currentUser, String username,
+			String password) {
+		UsernamePasswordToken token = new UsernamePasswordToken(username,
+				password);
+		try {
+			currentUser.login(token);
+			currentUser.getSession().setAttribute("username", username);
+		} catch (UnknownAccountException uae) {
+			log.info("There is no user with username of " + token.getUsername());
+		} catch (IncorrectCredentialsException ice) {
+			log.info("Password for account " + token.getUsername()
+					+ " was incorrect!");
+		} catch (LockedAccountException lae) {
+			log.info("The account for username " + token.getUsername()
+					+ " is locked.  "
+					+ "Please contact your administrator to unlock it.");
+		}
+		// ... catch more exceptions here
+		catch (AuthenticationException ae) {
+			// unexpected condition? error?
+		}
+	}
+
+	public static void showWhatRolesYouAre(Subject currentUser) {
+		if (currentUser.hasRole("warrior"))
+			log.info("You are a warrior.");
+		if (currentUser.hasRole("ranger"))
+			log.info("You are a ranger.");
+		if (currentUser.hasRole("swordman"))
+			log.info("You are a swordman.");
+		if (currentUser.hasRole("fighter"))
+			log.info("You are a fighter.");
+		if (currentUser.hasRole("archer"))
+			log.info("You are an archer.");
+		if (currentUser.hasRole("mage"))
+			log.info("You are a mage.");
+	}
+
+	public static void wieldBow(Subject currentUser) {
+		if (currentUser.isPermitted("shoot"))
+			log.info("You wield a bow.");
+		else
+			log.info("You can not wield a bow.");
+	}
+
+	public static void wieldSword(Subject currentUser) {
+		if (currentUser.isPermitted("melee:sword"))
+			log.info("You wield a sword.");
+		else
+			log.info("You can not wield a sword.");
+	}
+
+	public static void doShoot(Subject currentUser) {
+		if (currentUser.isPermitted("shoot"))
+			log.info("You shoot an arrow on an enemy.");
+	}
+
+	public static void doCast(Subject currentUser) {
+		if (currentUser.isPermitted("cast:fireball"))
+			log.info("You cast fireball on an enemy.");
+		if (currentUser.isPermitted("cast:blizzard"))
+			log.info("You cast blizzard on an enemy.");
+		if (currentUser.isPermitted("cast:storm"))
+			log.info("You cast storm on an enemy.");
+	}
+
+	public static void doMelee(Subject currentUser) {
+		if (currentUser.isPermitted("melee:stab"))
+			log.info("You stab an enemy.");
+		if (currentUser.isPermitted("melee:slash"))
+			log.info("You slash an enemy.");
+		if (currentUser.isPermitted("melee:punch"))
+			log.info("You punch an enemy.");
+	}
+
+	public static void beAttacked(Subject currentUser) {
+		if (currentUser.isPermitted("dodge"))
+			log.info("An enemy attack you but you dodge it!");
+		else if (currentUser.isPermitted("parry"))
+			log.info("An enemy attack you but you parry it with your weapon!");
+		else if (currentUser.isPermitted("heal"))
+			log.info("An enemy attack you and you heal yourself!");
+		else
+			log.info("An enemy attack you and you die.");
+	}
+
 	public static void main(String[] args) {
 
-		// The easiest way to create a Shiro SecurityManager with configured
-		// realms, users, roles and permissions is to use the simple INI config.
-		// We'll do that by using a factory that can ingest a .ini file and
-		// return a SecurityManager instance:
-
-		// Use the shiro.ini file at the root of the classpath
-		// (file: and url: prefixes load from files and urls respectively):
 		Factory<SecurityManager> factory = new IniSecurityManagerFactory(
 				"classpath:shiro.ini");
 		SecurityManager securityManager = factory.getInstance();
-
-		// for this simple example quickstart, make the SecurityManager
-		// accessible as a JVM singleton. Most applications wouldn't do this
-		// and instead rely on their container configuration or web.xml for
-		// webapps. That is outside the scope of this simple quickstart, so
-		// we'll just do the bare minimum so you can continue to get a feel
-		// for things.
 		SecurityUtils.setSecurityManager(securityManager);
-
-		// Now that a simple Shiro environment is set up, let's see what you can
-		// do:
 
 		// get the currently executing user:
 		Subject currentUser = SecurityUtils.getSubject();
 
-		// Do some stuff with a Session (no need for a web or EJB container!!!)
-		Session session = currentUser.getSession();
-		session.setAttribute("someKey", "aValue");
-		String value = (String) session.getAttribute("someKey");
-		if (value.equals("aValue")) {
-			log.info("Retrieved the correct value! [" + value + "]");
-		}
-
-		// let's login the current user so we can check against roles and
-		// permissions:
+		// login and have permissions
 		if (!currentUser.isAuthenticated()) {
-			UsernamePasswordToken token = new UsernamePasswordToken(
-					"lonestarr", "vespa");
-			token.setRememberMe(true);
-			try {
-				currentUser.login(token);
-			} catch (UnknownAccountException uae) {
-				log.info("There is no user with username of "
-						+ token.getPrincipal());
-			} catch (IncorrectCredentialsException ice) {
-				log.info("Password for account " + token.getPrincipal()
-						+ " was incorrect!");
-			} catch (LockedAccountException lae) {
-				log.info("The account for username " + token.getPrincipal()
-						+ " is locked.  "
-						+ "Please contact your administrator to unlock it.");
-			}
-			// ... catch more exceptions here (maybe custom ones specific to
-			// your application?
-			catch (AuthenticationException ae) {
-				// unexpected condition? error?
-			}
+			doLogin(currentUser, "Newbie", "newbie");
 		}
 
-		// say who they are:
-		// print their identifying principal (in this case, a username):
-		log.info("User [" + currentUser.getPrincipal()
+		if (currentUser.getPrincipal() == null)
+			return;
+
+		log.info("User [" + currentUser.getSession().getAttribute("username")
 				+ "] logged in successfully.");
 
-		// test a role:
-		if (currentUser.hasRole("schwartz")) {
-			log.info("May the Schwartz be with you!");
-		} else {
-			log.info("Hello, mere mortal.");
-		}
+		showWhatRolesYouAre(currentUser);
 
-		// test a typed permission (not instance-level)
-		if (currentUser.isPermitted("lightsaber:weild")) {
-			log.info("You may use a lightsaber ring.  Use it wisely.");
-		} else {
-			log.info("Sorry, lightsaber rings are for schwartz masters only.");
-		}
+		wieldBow(currentUser);
 
-		// a (very powerful) Instance Level permission:
-		if (currentUser.isPermitted("winnebago:drive:eagle5")) {
-			log.info("You are permitted to 'drive' the winnebago with license plate (id) 'eagle5'.  "
-					+ "Here are the keys - have fun!");
-		} else {
-			log.info("Sorry, you aren't allowed to drive the 'eagle5' winnebago!");
-		}
+		wieldSword(currentUser);
+
+		doMelee(currentUser);
+
+		doShoot(currentUser);
+
+		doCast(currentUser);
+
+		beAttacked(currentUser);
 
 		// all done - log out!
 		currentUser.logout();
-
-		System.exit(0);
 	}
 }
