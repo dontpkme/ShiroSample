@@ -114,11 +114,13 @@ public class Quickstart {
 
 		// login and have permissions
 		if (!currentUser.isAuthenticated()) {
-			doLogin(currentUser, "Newbie", "newbie");
+			doLogin(currentUser, "Study", "study");
 		}
 
-		if (currentUser.getPrincipal() == null)
+		if (currentUser.getPrincipal() == null) {
+			log.info("login failed.");
 			return;
+		}
 
 		log.info("User [" + currentUser.getSession().getAttribute("username")
 				+ "] logged in successfully.");
