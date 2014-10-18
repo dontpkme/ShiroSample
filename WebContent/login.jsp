@@ -1,6 +1,8 @@
 
 <%@ taglib prefix="shiro" uri="http://shiro.apache.org/tags" %>
-
+<%
+net.dpkm.shiro.Quickstart q;
+%>
 Login Page
 
 <form method="post">

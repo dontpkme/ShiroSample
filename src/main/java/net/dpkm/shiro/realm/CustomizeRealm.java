@@ -1,4 +1,4 @@
-package realm;
+package net.dpkm.shiro.realm;
 
 import java.util.ArrayList;
 import java.util.HashMap;
