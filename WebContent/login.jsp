@@ -1,8 +1,5 @@
 
 <%@ taglib prefix="shiro" uri="http://shiro.apache.org/tags" %>
-<%
-	Quickstart q;
-%>
 
 Login Page
 
