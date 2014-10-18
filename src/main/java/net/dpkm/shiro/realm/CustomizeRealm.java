@@ -57,6 +57,7 @@ public class CustomizeRealm extends AuthorizingRealm {
 		initRolePerm("fighter", "melee:punch", "dodge");
 		initRolePerm("archer", "shoot");
 		initRolePerm("mage", "cast:fireball,blizzard", "heal");
+		initRolePerm("GM", "*");
 	}
 
     protected SimpleAccount getAccount(String username) {

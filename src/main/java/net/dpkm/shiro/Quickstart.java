@@ -6,10 +6,7 @@ import org.apache.shiro.authc.IncorrectCredentialsException;
 import org.apache.shiro.authc.LockedAccountException;
 import org.apache.shiro.authc.UnknownAccountException;
 import org.apache.shiro.authc.UsernamePasswordToken;
-import org.apache.shiro.config.IniSecurityManagerFactory;
-import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.subject.Subject;
-import org.apache.shiro.util.Factory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -105,27 +102,18 @@ public class Quickstart {
 	}
 
 	public static void main(String[] args) {
-
-		Factory<SecurityManager> factory = new IniSecurityManagerFactory(
-				"classpath:shiro.ini");
-		SecurityManager securityManager = factory.getInstance();
-		SecurityUtils.setSecurityManager(securityManager);
-
 		// get the currently executing user:
 		Subject currentUser = SecurityUtils.getSubject();
 
 		// login and have permissions
 		if (!currentUser.isAuthenticated()) {
-			doLogin(currentUser, "Study", "study");
+			doLogin(currentUser, "Joe", "joe");
 		}
 
 		if (currentUser.getPrincipal() == null) {
 			log.info("login failed.");
 			return;
 		}
-
-		log.info("User [" + currentUser.getSession().getAttribute("username")
-				+ "] logged in successfully.");
 
 		showWhatRolesYouAre(currentUser);
 
@@ -140,8 +128,5 @@ public class Quickstart {
 		doCast(currentUser);
 
 		beAttacked(currentUser);
-
-		// all done - log out!
-		currentUser.logout();
 	}
 }
